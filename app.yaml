@@ -1,0 +1,28 @@
+service: mqtt
+runtime: python
+api_version: '1.0'
+env: flex
+runtime_config:
+  python_version: 3.6
+
+entrypoint: python3.6 src/mqtt_service.py 
+
+env_variables:
+  # Name of the topic AND subscription for notification pub-sub messages.
+  # (both share the same name)
+  GCLOUD_NOTIFICATIONS_TOPIC_SUBS: notifications
+
+  # IoT device registry.
+  GCLOUD_DEV_REG: device-registry
+
+  # PFC topic AND subscription for data / recipes.
+  GCLOUD_DEV_EVENTS: device-events
+
+  # Area we deploy to and cover.
+  GCLOUD_REGION: us-east1
+  GCLOUD_ZONE: us-east1-b
+
+  # Data service specific env vars.
+  BQ_DATASET: openag_public_user_data
+  BQ_TABLE: vals
+  CS_BUCKET: openag-v1-images

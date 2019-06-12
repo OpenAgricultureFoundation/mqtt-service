@@ -1,0 +1,8 @@
+# The -r command tells pip3 to include and install all of these files:
+
+# Python requirements for this notification-service project:
+-r config/requirements.txt
+
+# Python requirements for the cloud_common pulled in as a git submodule:
+-r cloud_common/config/requirements.txt
+
