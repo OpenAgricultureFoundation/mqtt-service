@@ -21,5 +21,12 @@ export GCLOUD_DEV_EVENTS=device-events
 # IoT device registry
 export GCLOUD_DEV_REG=device-registry
 
+# Defaults for writing to big query
+export BQ_DATASET="openag_public_user_data"
+export BQ_TABLE="vals"
+
+# Defaults for saving images in storage buckets
+export CS_BUCKET="openag-v1-images"
+export CS_UPLOAD_BUCKET="openag-public-image-uploads"
 
 

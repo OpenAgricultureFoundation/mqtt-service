@@ -48,8 +48,9 @@ def callback(msg):
         # try to decode the byte data as a string / JSON, exception if not json
         pydict = json.loads(msg.data.decode('utf-8'))
 
-        # finally let our mqtt class parse this
-        mqtt_messaging.parse(pydict)
+        # finally let our mqtt class parse this message and decide how to 
+        # handle it
+        mqtt_messaging.parse(msg.attributes['deviceId'], pydict)
 
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -61,27 +62,28 @@ def callback(msg):
 def main():
 
     # Default log level.
-    logging.basicConfig( level=logging.ERROR ) # can only call once
+    logging.basicConfig(level=logging.ERROR) # can only call once
 
     # Parse command line args.
     parser = argparse.ArgumentParser()
-    parser.add_argument( '--log', type=str, 
+    parser.add_argument('--log', type=str, 
         help='log level: debug, info, warning, error, critical', 
         default='info' )
     args = parser.parse_args()
 
     # User specified log level.
-    numeric_level = getattr( logging, args.log.upper(), None )
-    if not isinstance( numeric_level, int ):
-        logging.critical('publisher: Invalid log level: %s' % \
-                args.log )
-        numeric_level = getattr( logging, 'ERROR', None )
-    logging.getLogger().setLevel( level=numeric_level )
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int ):
+        logging.critical(f'publisher: Invalid log level: {args.log}')
+        numeric_level = getattr(logging, 'ERROR', None)
+    logging.getLogger().setLevel(level=numeric_level)
 
     # Make sure our env. vars are set up.
-    if None == env_vars.cloud_project_id or None == env_vars.dev_events:
+    if None == env_vars.cloud_project_id or None == env_vars.dev_events or \
+            None == env_vars.bq_dataset or None == env_vars.bq_table or \
+            None == env_vars.cs_bucket or None == env_vars.cs_upload_bucket:
         logging.critical('Missing required environment variables.')
-        exit( 1 )
+        exit(1)
 
     logging.info(f'{os.path.basename(__file__)} using cloud_common version {cc_version.__version__}')
 
