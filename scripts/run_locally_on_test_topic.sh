@@ -19,7 +19,7 @@ fi
 # PubSub topic and subscription that MQTT telementry 'events' are sent to.
 # This is a special test-only subscription that a test client writes to.
 # ONLY used for debugging a locally running service with one client.
-export GCLOUD_DEV_EVENTS=test
+export GCLOUD_DEV_EVENTS="device-test"
 
 # BigQuery TEST dataset we write to.
 export BQ_DATASET="test"
