@@ -1,6 +1,7 @@
 # Project stuff to ignore
 *service_account.json
 pyenv/
+tmp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -25,7 +25,7 @@ fi
 # Yes, so activate it for this bash process
 source pyenv/bin/activate
 
-# Add the top leve dir to the py path so we can pick up the submodule.
+# Add the top level dir to the py path so we can pick up the submodule.
 export PYTHONPATH=$DIR
 
 # Run our entry point:

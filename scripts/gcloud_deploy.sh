@@ -21,6 +21,22 @@ gcloud config set compute/region $GCLOUD_REGION
 gcloud config set compute/zone $GCLOUD_ZONE
 gcloud config list
 
+# To handle the fact that app engine can't deal with git submodules, 
+# make a tempporary copy of all the source and deploy that.
+rm -fr tmp
+mkdir tmp
+cp app.yaml LICENSE README.md tmp/
+cp -R cloud_common config docs scripts src tmp/
+rm tmp/config/*service_account.json
+
+# Now make a combined (service + cloud_common submodule) reqs.
+# (app engine can't handle includes)
+rm -f tmp/requirements.txt 
+touch tmp/requirements.txt 
+cat config/requirements.txt >> tmp/requirements.txt 
+cat cloud_common/config/requirements.txt >> tmp/requirements.txt 
+
+cd tmp
 gcloud app deploy
 
 #gcloud app open-console

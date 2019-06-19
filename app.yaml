@@ -26,3 +26,7 @@ env_variables:
   BQ_DATASET: openag_public_user_data
   BQ_TABLE: vals
   CS_BUCKET: openag-v1-images
+  CS_UPLOAD_BUCKET: openag-public-image-uploads
+
+  # Add the top level dir to the py path so we can pick up the submodule.
+  PYTHONPATH: /app
