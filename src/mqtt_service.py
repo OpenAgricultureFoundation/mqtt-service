@@ -42,8 +42,8 @@ def callback(msg):
 
         display_data = msg.data
         if 250 < len(display_data):
-            display_data = "..."
-        logging.debug(f'subs callback received:\n\n{display_data}\n')
+            display_data = f"... {len(display_data)} bytes ..."
+        logging.debug(f'subs callback received:\n\n{display_data}\nfrom {msg.attributes["deviceId"]}\n')
 
         # try to decode the byte data as a string / JSON, exception if not json
         pydict = json.loads(msg.data.decode('utf-8'))
