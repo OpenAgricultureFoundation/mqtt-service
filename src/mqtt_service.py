@@ -7,11 +7,12 @@
 """
 
 import os, sys, json, argparse, logging, signal, traceback
+import paho.mqtt.client as mqtt
 
-from cloud_common.cc import version as cc_version
-from cloud_common.cc.google import pubsub # takes a few secs...
-from cloud_common.cc.google import env_vars 
-from cloud_common.cc.mqtt.mqtt_messaging import MQTTMessaging
+# from cloud_common.cc import version as cc_version
+# from cloud_common.cc.google import pubsub # takes a few secs...
+# from cloud_common.cc.google import env_vars
+from cloud_common.cc.mqtt.local_mqtt_messaging import MQTTMessaging
 
 
 #------------------------------------------------------------------------------
@@ -32,25 +33,31 @@ signal.signal( signal.SIGINT, signal_handler )
 # This callback is called for each message we receive on the device events 
 # pubsub topic.
 # We acknowledge the message, then validate and act on it if valid.
-def callback(msg):
+def callback(mqttc, obj, msg):
     try:
-        msg.ack() # acknowledge to the server that we got the message
+        #msg.ack() # acknowledge to the server that we got the message
+        logging.error("RECIVED MESSAGE")
+        split_topic = msg.topic.split("/")
+        if len(split_topic) < 2:
+            logging.error(f'Can not get deviceId from topic: ' + msg.topic)
+            return
+        deviceId = split_topic[2]
 
-        if len(msg.data) == 0:
-            logging.error(f'No data in message.')
-            return 
+        #if len(msg.data) == 0:
+        #    logging.error(f'No data in message.')
+        #    return
 
-        display_data = msg.data
+        display_data = msg.payload
         if 250 < len(display_data):
             display_data = f"... {len(display_data)} bytes ..."
-        logging.debug(f'subs callback received:\n\n{display_data}\nfrom {msg.attributes["deviceId"]}\n')
+        logging.error(f'subs callback received:\n\n{display_data}\nfrom {deviceId}\n')
 
         # try to decode the byte data as a string / JSON, exception if not json
-        pydict = json.loads(msg.data.decode('utf-8'))
+        pydict = json.loads(msg.payload.decode('utf-8'))
 
         # finally let our mqtt class parse this message and decide how to 
         # handle it
-        mqtt_messaging.parse(msg.attributes['deviceId'], pydict)
+        mqtt_messaging.parse(deviceId, pydict)
 
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -69,6 +76,15 @@ def main():
     parser.add_argument('--log', type=str, 
         help='log level: debug, info, warning, error, critical', 
         default='info' )
+    parser.add_argument('--host', type=str,
+                        help='Set a local mqtt broker host, default `mqtt`',
+                        default='mqtt')
+    parser.add_argument('--port', type=int,
+                        help='Set a local mqtt broker port, default 1883',
+                        default=1883)
+    parser.add_argument('--name', type=str,
+                        help='Set the mqtt client name, defaults to openag_mqtt_service',
+                        default='openag_mqtt_service')
     args = parser.parse_args()
 
     # User specified log level.
@@ -78,18 +94,29 @@ def main():
         numeric_level = getattr(logging, 'ERROR', None)
     logging.getLogger().setLevel(level=numeric_level)
 
-    # Make sure our env. vars are set up.
-    if None == env_vars.cloud_project_id or None == env_vars.dev_events or \
-            None == env_vars.bq_dataset or None == env_vars.bq_table or \
-            None == env_vars.cs_bucket or None == env_vars.cs_upload_bucket:
-        logging.critical('Missing required environment variables.')
-        exit(1)
+    mqtt.client_name = args.name
+    mqtt_host = args.host
+    mqtt_port = args.port
 
-    logging.info(f'{os.path.basename(__file__)} using cloud_common version {cc_version.__version__}')
+    # Make sure our env. vars are set up.
+    #if None == env_vars.cloud_project_id or None == env_vars.dev_events or \
+    #        None == env_vars.bq_dataset or None == env_vars.bq_table or \
+    #        None == env_vars.cs_bucket or None == env_vars.cs_upload_bucket:
+    #    logging.critical('Missing required environment variables.')
+    #    exit(1)
+
+    # logging.info(f'{os.path.basename(__file__)} using cloud_common version {cc_version.__version__}')
 
     # Infinetly re-subscribe to this topic and receive callbacks for each
     # message.
-    pubsub.subscribe(env_vars.cloud_project_id, env_vars.dev_events, callback)
+    # pubsub.subscribe(env_vars.cloud_project_id, env_vars.dev_events, callback)
+    client = mqtt.Client(args.name)
+    client.on_message = callback
+    client.connect(host=mqtt_host, port=mqtt_port)
+
+    client.subscribe("/devices/#")
+
+    client.loop_forever()
 
 
 #------------------------------------------------------------------------------
