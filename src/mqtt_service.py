@@ -39,7 +39,7 @@ signal.signal( signal.SIGINT, signal_handler )
 def callback(mqttc, userdata, msg):
     try:
         #msg.ack() # acknowledge to the server that we got the message
-        logging.error("RECIVED MESSAGE")
+        #logging.error("RECIVED MESSAGE")
         split_topic = msg.topic.split("/")
         if len(split_topic) < 2:
             logging.error(f'Can not get deviceId from topic: ' + msg.topic)
@@ -53,7 +53,7 @@ def callback(mqttc, userdata, msg):
         display_data = msg.payload
         if 250 < len(display_data):
             display_data = f"... {len(display_data)} bytes ..."
-        logging.error(f'subs callback received:\n\n{display_data}\nfrom {deviceId}\n')
+        #logging.error(f'subs callback received:\n\n{display_data}\nfrom {deviceId}\n')
 
         # try to decode the byte data as a string / JSON, exception if not json
         pydict = json.loads(msg.payload.decode('utf-8'))
